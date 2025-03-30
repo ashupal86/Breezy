@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container sketch-border animate-fade-in">
+        <div class="progress mb-4">
+            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" class="needs-validation" id="registrationForm" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <!-- Step 1: Basic Information -->
+            <div class="form-step" id="step1">
+                <h2 class="text-center mb-4">Create Account</h2>
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", placeholder="Enter your full name") }}
+                    <div class="invalid-feedback" id="name-error"></div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control", placeholder="Enter your email") }}
+                    <div class="invalid-feedback" id="email-error"></div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary next-step" data-step="0">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Password -->
+            <div class="form-step d-none" id="step2">
+                <h2 class="text-center mb-4">Set Password</h2>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control", placeholder="Choose a password") }}
+                    <div class="invalid-feedback" id="password-error"></div>
+                    <div class="password-strength-meter mt-2"></div>
+                </div>
+
+                <div class="mb-4">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                    <div class="invalid-feedback" id="confirm-password-error"></div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary prev-step">Back</button>
+                    <button type="button" class="btn btn-primary next-step" data-step="1">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Career Interests -->
+            <div class="form-step d-none" id="step3">
+                <h2 class="text-center mb-4">Career Interests</h2>
+                <div class="interests-grid mb-4">
+                    {% for value, label in form.interests.choices %}
+                    <div class="interest-checkbox">
+                        <input type="checkbox" class="btn-check" name="interests" id="interest_{{ value }}" value="{{ value }}"
+                               {% if form.interests.data and value in form.interests.data %}checked{% endif %}>
+                        <label class="btn btn-outline-primary interest-label" for="interest_{{ value }}">
+                            <i class="interest-icon"></i>
+                            <span>{{ label }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="invalid-feedback" id="interests-error"></div>
+                <div class="selected-count text-muted mb-3">Selected: <span id="interestCount">0</span>/10</div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary prev-step">Back</button>
+                    <button type="button" class="btn btn-primary next-step" data-step="2">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Terms and Submit -->
+            <div class="form-step d-none" id="step4">
+                <h2 class="text-center mb-4">Almost Done!</h2>
+                <div class="mb-4">
+                    <div class="form-check">
+                        {{ form.terms(class="form-check-input") }}
+                        {{ form.terms.label(class="form-check-label") }}
+                        <div class="invalid-feedback" id="terms-error"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary prev-step">Back</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="text-center mt-4">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="text-primary">Sign In</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Wait for the DOM to be fully loaded
+window.addEventListener('load', function() {
+    console.clear(); // Clear any previous console logs
+    console.log('🚀 Registration form script starting...');
+
+    // Get DOM elements
+    const form = document.getElementById('registrationForm');
+    const steps = document.querySelectorAll('.form-step');
+    const progressBar = document.querySelector('.progress-bar');
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    let currentStep = 0;
+
+    console.log('Found elements:', {
+        form: !!form,
+        steps: steps.length,
+        nextButtons: nextButtons.length,
+        prevButtons: prevButtons.length
+    });
+
+    // Add click handlers to next buttons
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Next button clicked');
+            const step = parseInt(this.getAttribute('data-step'));
+            console.log('Current step:', step);
+            
+            if (validateStep(step)) {
+                currentStep++;
+                updateFormDisplay();
+            }
+        });
+        console.log('Added click handler to next button for step', button.getAttribute('data-step'));
+    });
+
+    // Add click handlers to previous buttons
+    prevButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Previous button clicked');
+            if (currentStep > 0) {
+                currentStep--;
+                updateFormDisplay();
+            }
+        });
+        console.log('Added click handler to prev button');
+    });
+
+    // Simple validation function
+    function validateStep(step) {
+        console.log('Validating step', step);
+        let isValid = true;
+        const errors = {};
+
+        switch(step) {
+            case 0:
+                const name = form.querySelector('input[name="name"]').value.trim();
+                const email = form.querySelector('input[name="email"]').value.trim();
+                if (!name) errors.name = 'Name is required';
+                if (!email) errors.email = 'Email is required';
+                break;
+            case 1:
+                const password = form.querySelector('input[name="password"]').value;
+                const confirm = form.querySelector('input[name="confirm_password"]').value;
+                if (!password) errors.password = 'Password is required';
+                if (password !== confirm) errors.confirm_password = 'Passwords do not match';
+                break;
+            case 2:
+                const interests = form.querySelectorAll('input[name="interests"]:checked');
+                if (interests.length === 0) errors.interests = 'Select at least one interest';
+                break;
+        }
+
+        // Show errors if any
+        if (Object.keys(errors).length > 0) {
+            showErrors(errors);
+            isValid = false;
+        }
+
+        console.log('Validation result:', isValid);
+        return isValid;
+    }
+
+    // Update display function
+    function updateFormDisplay() {
+        console.log('Updating display to step', currentStep);
+        steps.forEach((step, index) => {
+            if (index === currentStep) {
+                step.classList.remove('d-none');
+            } else {
+                step.classList.add('d-none');
+            }
+        });
+        
+        // Update progress bar
+        const progress = ((currentStep + 1) / steps.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+        console.log('Progress updated to', progress + '%');
+    }
+
+    // Show errors function
+    function showErrors(errors) {
+        console.log('Showing errors:', errors);
+        Object.keys(errors).forEach(field => {
+            const errorDiv = document.getElementById(`${field}-error`);
+            if (errorDiv) {
+                errorDiv.textContent = errors[field];
+                errorDiv.style.display = 'block';
+            }
+        });
+    }
+
+    // Initialize form
+    console.log('Form initialization complete');
+});
+</script>
+
+<style>
+.form-step {
+    transition: all 0.3s ease;
+}
+
+.progress {
+    height: 8px;
+    background-color: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--primary), var(--success));
+    transition: width 0.3s ease;
+}
+
+.interests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.interest-checkbox {
+    position: relative;
+}
+
+.interest-label {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--background);
+    color: var(--text);
+}
+
+.interest-label:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.interest-label.selected {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.btn-check:checked + .interest-label {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.selected-count {
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.invalid-feedback {
+    display: none;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--danger);
+}
+
+.form-control.is-invalid,
+.form-check-input.is-invalid {
+    border-color: var(--danger);
+}
+
+.password-strength-meter {
+    margin-top: 0.5rem;
+}
+
+.password-strength-meter small {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+}
+
+/* Scrollbar styling */
+.interests-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.interests-grid::-webkit-scrollbar-track {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.interests-grid::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.interests-grid::-webkit-scrollbar-thumb:hover {
+    background: #7c74ff;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %} 

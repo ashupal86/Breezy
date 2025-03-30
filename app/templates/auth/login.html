@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container sketch-border animate-fade-in">
+        <h2 class="text-center mb-4">Welcome Back</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} sketch-border" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your email") }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password") }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-3 form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="mb-2">
+                    <a href="{{ url_for('auth.forgot_password') }}" class="text-primary">Forgot Password?</a>
+                </p>
+                <p>
+                    Don't have an account? 
+                    <a href="{{ url_for('auth.register') }}" class="text-primary">Sign Up</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+{% endblock %} 

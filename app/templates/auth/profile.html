@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container sketch-border animate-fade-in">
+        <h2 class="text-center mb-4">Edit Profile</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} sketch-border" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.profile') }}" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter your full name") }}
+                {% if form.name.errors %}
+                    {% for error in form.name.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.bio.label(class="form-label") }}
+                {{ form.bio(class="form-control" + (" is-invalid" if form.bio.errors else ""), rows="4", placeholder="Tell us about yourself") }}
+                {% if form.bio.errors %}
+                    {% for error in form.bio.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.linkedin_profile.label(class="form-label") }}
+                {{ form.linkedin_profile(class="form-control" + (" is-invalid" if form.linkedin_profile.errors else ""), placeholder="https://linkedin.com/in/yourusername") }}
+                {% if form.linkedin_profile.errors %}
+                    {% for error in form.linkedin_profile.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                {{ form.interests.label(class="form-label") }}
+                {{ form.interests(class="form-select select2-multiple" + (" is-invalid" if form.interests.errors else ""), 
+                    multiple="multiple",
+                    **{
+                        'data-placeholder': 'Select your career interests...',
+                        'aria-label': 'Select career interests'
+                    }
+                ) }}
+                <small class="text-muted mt-2 d-block">Update your career interests to help us provide better recommendations.</small>
+                {% if form.interests.errors %}
+                    {% for error in form.interests.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+
+        {% if activities %}
+        <div class="mt-5">
+            <h3 class="mb-4">Recent Activities</h3>
+            <div class="activity-list">
+                {% for activity in activities %}
+                <div class="activity-item sketch-border p-3 mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="activity-icon me-3">
+                            <i class="fas {{ activity.icon }}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p class="mb-1">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.timestamp.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+{% endblock %} 

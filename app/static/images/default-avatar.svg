@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <circle cx="100" cy="100" r="100" fill="#e3f2fd"/>
+    
+    <!-- Head -->
+    <circle cx="100" cy="85" r="35" fill="#3498db"/>
+    
+    <!-- Body -->
+    <path d="M100,120 Q60,160 60,200 L140,200 Q140,160 100,120" 
+          fill="#3498db"/>
+    
+    <!-- Decorative Elements -->
+    <circle cx="85" cy="80" r="5" fill="#fff" opacity="0.7"/>
+</svg> 

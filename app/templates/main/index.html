@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-gradient-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Discover Your Perfect Career Path</h1>
+                <p class="lead mb-4">
+                    Connect with industry professionals, attend virtual events, and get personalized career guidance 
+                    powered by AI technology.
+                </p>
+                {% if not current_user.is_authenticated %}
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-4">Get Started</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Sign In</a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="{{ url_for('chat.ai_chat') }}" class="btn btn-light btn-lg px-4">Chat with AI Advisor</a>
+                    <a href="{{ url_for('events.index') }}" class="btn btn-outline-light btn-lg px-4">Browse Events</a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{{ url_for('static', filename='images/career-illustration.svg') }}" 
+                     alt="Career Exploration" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Career Explorer AI?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-robot fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="h4 mb-3">AI Career Advisor</h3>
+                        <p class="text-muted">
+                            Get personalized career guidance and insights from our advanced AI advisor, available 24/7.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="h4 mb-3">Virtual Events</h3>
+                        <p class="text-muted">
+                            Attend industry events, webinars, and networking sessions from the comfort of your home.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-users fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="h4 mb-3">Professional Network</h3>
+                        <p class="text-muted">
+                            Connect with professionals, mentors, and peers in your field of interest.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="recommendations-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Personalized for You</h2>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h3 class="h5 mb-0">Upcoming Events</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_events %}
+                            {% for event in upcoming_events %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="event-date text-center me-3">
+                                    <div class="month text-uppercase text-muted small">
+                                        {{ event.start_date.strftime('%b') }}
+                                    </div>
+                                    <div class="day h4 mb-0">
+                                        {{ event.start_date.strftime('%d') }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="h6 mb-1">{{ event.title }}</h4>
+                                    <p class="small text-muted mb-0">
+                                        {{ event.start_date.strftime('%I:%M %p') }} - 
+                                        {{ 'Virtual' if event.is_virtual else event.location }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted mb-0">No upcoming events found.</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <a href="{{ url_for('events.index') }}" class="btn btn-outline-primary btn-sm">
+                            View All Events
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h3 class="h5 mb-0">Recommended Connections</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if recommended_users %}
+                            {% for user in recommended_users %}
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+                                     alt="{{ user.name }}" 
+                                     class="rounded-circle me-3"
+                                     style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h4 class="h6 mb-1">{{ user.name }}</h4>
+                                    <p class="small text-muted mb-0">
+                                        {{ user.interests|join(', ') }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted mb-0">No recommendations found.</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <a href="{{ url_for('main.explore') }}" class="btn btn-outline-primary btn-sm">
+                            Find More Connections
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="cta-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="mb-4">Ready to Start Your Career Journey?</h2>
+                <p class="lead mb-4">
+                    Join thousands of professionals who have found their dream careers through Career Explorer AI.
+                </p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    Create Free Account
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="testimonials-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Users Say</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="mb-4">
+                            "The AI career advisor helped me discover career paths I hadn't considered before. 
+                            Now I'm working in my dream job!"
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='images/testimonial-1.jpg') }}"
+                                 alt="Sarah Johnson" 
+                                 class="rounded-circle me-3"
+                                 style="width: 48px; height: 48px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Sarah Johnson</h5>
+                                <small class="text-muted">Software Engineer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="mb-4">
+                            "The virtual events and networking opportunities have been invaluable for my 
+                            professional growth."
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='images/testimonial-2.jpg') }}"
+                                 alt="Michael Chen" 
+                                 class="rounded-circle me-3"
+                                 style="width: 48px; height: 48px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Michael Chen</h5>
+                                <small class="text-muted">Marketing Manager</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="mb-4">
+                            "Career Explorer AI's personalized guidance helped me transition into a new industry 
+                            seamlessly."
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='images/testimonial-3.jpg') }}"
+                                 alt="Emily Rodriguez" 
+                                 class="rounded-circle me-3"
+                                 style="width: 48px; height: 48px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Emily Rodriguez</h5>
+                                <small class="text-muted">Data Scientist</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(78, 115, 223, 0.1);
+}
+
+.event-date {
+    min-width: 60px;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.testimonials-section .card {
+    position: relative;
+}
+
+.testimonials-section .card::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    font-size: 80px;
+    color: rgba(78, 115, 223, 0.1);
+    font-family: serif;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling to all links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

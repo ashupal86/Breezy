@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}AI Career Advisor - Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chat with AI Career Advisor</h5>
+                <span class="badge bg-light text-primary">Level {{ current_user.level }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="chat-container" id="chat-messages">
+                    {% for message in chat_history %}
+                        <div class="chat-message {{ 'user' if message.is_user else 'ai' }}">
+                            {{ message.content }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="p-3 border-top">
+                    <form id="chat-form" class="mb-0">
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control" 
+                                   placeholder="Type your message..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Suggested Topics -->
+        <div class="card mt-4 shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Suggested Topics</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary btn-sm topic-btn" 
+                            onclick="appendTopic(this.textContent)">
+                        Career path exploration
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm topic-btn" 
+                            onclick="appendTopic(this.textContent)">
+                        Skills assessment
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm topic-btn" 
+                            onclick="appendTopic(this.textContent)">
+                        Industry trends
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm topic-btn" 
+                            onclick="appendTopic(this.textContent)">
+                        Interview preparation
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm topic-btn" 
+                            onclick="appendTopic(this.textContent)">
+                        Resume building
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    function appendTopic(topic) {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = topic;
+            chatInput.focus();
+        }
+    }
+</script>
+{% endblock %} 

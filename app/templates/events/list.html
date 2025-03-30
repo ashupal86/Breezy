@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Events - Career Explorer AI{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Upcoming Events</h2>
+        <p class="lead">Discover company visits and webinars tailored to your interests.</p>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="company_visit">Company Visits</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="webinar">Webinars</button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for event in events %}
+    <div class="col-md-6 mb-4 event-card" data-type="{{ event.event_type }}">
+        <div class="card h-100 shadow-sm">
+            {% if event.company and event.company.logo %}
+            <img src="{{ event.company.logo }}" class="card-img-top" alt="{{ event.company.name }}">
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ event.title }}</h5>
+                    <span class="badge bg-{{ 'primary' if event.event_type == 'company_visit' else 'info' }}">
+                        {{ event.event_type|replace('_', ' ')|title }}
+                    </span>
+                </div>
+                <p class="card-text">{{ event.description }}</p>
+                <div class="event-details">
+                    <p class="mb-2">
+                        <i class="bi bi-calendar"></i>
+                        <span class="event-date">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-clock"></i>
+                        <span>Duration: {{ event.duration }} minutes</span>
+                    </p>
+                    {% if event.company %}
+                    <p class="mb-2">
+                        <i class="bi bi-building"></i>
+                        <span>{{ event.company.name }}</span>
+                    </p>
+                    {% endif %}
+                    <p class="mb-2">
+                        <i class="bi bi-people"></i>
+                        <span>{{ event.participants|length }}/{{ event.max_participants }} participants</span>
+                    </p>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-secondary">Level {{ event.level_required }}+ required</span>
+                        <span class="badge bg-success ms-2">+{{ event.points }} XP</span>
+                    </div>
+                    {% if current_user.level >= event.level_required %}
+                        {% if event not in current_user.events_attending %}
+                            <button class="btn btn-primary btn-sm" 
+                                    onclick="registerForEvent({{ event.id }})"
+                                    data-event-id="{{ event.id }}">
+                                Register
+                            </button>
+                        {% else %}
+                            <button class="btn btn-success btn-sm" disabled>Registered</button>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-secondary btn-sm" disabled 
+                                data-bs-toggle="tooltip" 
+                                title="Reach level {{ event.level_required }} to register">
+                            Level Required
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col">
+        <div class="alert alert-info">
+            No upcoming events at the moment. Check back later!
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if events %}
+<div class="row mt-4">
+    <div class="col">
+        <nav aria-label="Event pagination">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('events.list', page=pagination.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {{ 'active' if page == pagination.page else '' }}">
+                            <a class="page-link" href="{{ url_for('events.list', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('events.list', page=pagination.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Event filtering
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const eventCards = document.querySelectorAll('.event-card');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter events
+            eventCards.forEach(card => {
+                if (filter === 'all' || card.dataset.type === filter) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 
